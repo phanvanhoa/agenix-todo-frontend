@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Agenix Todo List</title>
+</head>
+<body>
+  <h1>Agenix Todo List</h1>
+  <input type="text" id="newTask" placeholder="New task">
+  <button onclick="addTask()">Add</button>
+  <ul id="todoList"></ul>
+
+<script>
+const API_BASE = 'https://agenix-todo-list.vercel.app/api/todos';
+
+async function loadTasks() {
+  const res = await fetch(API_BASE);
+  const data = await res.json();
+  const list = document.getElementById('todoList');
+  list.innerHTML = '';
+  (data.items || []).forEach(task => {
+    const li = document.createElement('li');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = task.completed;
+    checkbox.onchange = () => updateTask(task.id, checkbox.checked);
+    li.appendChild(checkbox);
+    const span = document.createElement('span');
+    span.textContent = task.content;
+    li.appendChild(span);
+    list.appendChild(li);
+  });
+}
+
+async function addTask() {
+  const title = document.getElementById('newTask').value.trim();
+  if (!title) return;
+  await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title })
+  });
+  document.getElementById('newTask').value = '';
+  loadTasks();
+}
+
+async function updateTask(id, isComplete) {
+  await fetch(`${API_BASE}/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_complete: isComplete })
+  });
+  loadTasks();
+}
+
+loadTasks();
+</script>
+</body>
+</html>
