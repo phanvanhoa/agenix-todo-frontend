@@ -17,6 +17,17 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    function toActivityNote(task) {
+      return {
+        "@context": "https://www.w3.org/ns/activitystreams",
+        "type": "Note",
+        "id": task.id,
+        "published": task.created_at,
+        "content": task.title,
+        "completed": task.is_complete
+      };
+    }
+
     async function loadTasks() {
       const { data, error } = await supabaseClient
         .from('todos')
@@ -25,16 +36,17 @@
 
       const list = document.getElementById('todoList');
       list.innerHTML = '';
-      (data || []).forEach(task => {
+      const notes = (data || []).map(toActivityNote);
+      notes.forEach(note => {
         const li = document.createElement('li');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = task.is_complete;
-        checkbox.onchange = () => updateTask(task.id, checkbox.checked);
+        checkbox.checked = note.completed;
+        checkbox.onchange = () => updateTask(note.id, checkbox.checked);
         li.appendChild(checkbox);
         const span = document.createElement('span');
-        span.textContent = task.title;
-        span.style.textDecoration = task.is_complete ? 'line-through' : 'none';
+        span.textContent = note.content;
+        span.style.textDecoration = note.completed ? 'line-through' : 'none';
         li.appendChild(span);
         list.appendChild(li);
       });
