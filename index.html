@@ -34,6 +34,7 @@
         li.appendChild(checkbox);
         const span = document.createElement('span');
         span.textContent = task.title;
+        span.style.textDecoration = task.is_complete ? 'line-through' : 'none';
         li.appendChild(span);
         list.appendChild(li);
       });
